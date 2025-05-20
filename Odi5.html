@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Football Match Predictor with Position & Streak</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: green;
+      color: #333;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .instructions {
+      font-size: 15px;
+      background: #ffffff;
+      padding: 15px;
+      border-left: 5px solid #3498db;
+      margin-bottom: 25px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    input[type=text], input[type=number], select {
+      width: 80px;
+      margin: 6px 8px 6px 0;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 25px;
+      padding: 14px 26px;
+      font-size: 16px;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    #result {
+      margin-top: 30px;
+      font-weight: bold;
+      font-size: 18px;
+      background: #eaf7ea;
+      color: #2e7d32;
+      padding: 18px;
+      border-radius: 8px;
+      border: 1px solid #c8e6c9;
+      min-height: 70px;
+    }
+    .probabilities {
+      margin-top: 12px;
+      font-weight: normal;
+      color: #34495e;
+    }
+    .animated-title {
+      font-size: 28px;
+      text-align: center;
+      font-weight: bold;
+      animation: zoomColorCycle 4s infinite ease-in-out;
+    }
+    @keyframes zoomColorCycle {
+      0% { transform: scale(1); color: red; }
+      25% { transform: scale(1.1); color: yellow; }
+      50% { transform: scale(1.2); color: blue; }
+      75% { transform: scale(1.1); color: green; }
+      100% { transform: scale(1); color: red; }
+    }
+  </style>
+</head>
+<body>
+
+<h2 class="animated-title">ODI LEAGUE PREMIUM DASHBOARD</h2>
+
+<div class="instructions">
+  <p>
+    Enter the last 5 match results for both teams using the format <strong>GoalsFor-GoalsAgainst</strong><br>
+    Example: <strong>2-1</strong> means your team scored 2 and conceded 1.<br>
+    Also enter the team's current league position (1 = top) and current streak type & length.<br>
+    Streak type: Home (H) or Away (A) matches played consecutively.<br>
+    The system factors all this to predict probabilities.
+  </p>
+</div>
+
+<!-- Input Section -->
+<div>
+  <label>Home Team Last 5 Matches:</label>
+  <input type="text" id="homeMatch1" placeholder="2-1">
+  <input type="text" id="homeMatch2" placeholder="1-1">
+  <input type="text" id="homeMatch3" placeholder="3-0">
+  <input type="text" id="homeMatch4" placeholder="0-2">
+  <input type="text" id="homeMatch5" placeholder="2-2">
+
+  <label>Away Team Last 5 Matches:</label>
+  <input type="text" id="awayMatch1" placeholder="1-0">
+  <input type="text" id="awayMatch2" placeholder="2-2">
+  <input type="text" id="awayMatch3" placeholder="0-1">
+  <input type="text" id="awayMatch4" placeholder="3-3">
+  <input type="text" id="awayMatch5" placeholder="1-4">
+
+  <label>Home Team League Position:</label>
+  <input type="number" id="homePosition" placeholder="1-20">
+
+  <label>Away Team League Position:</label>
+  <input type="number" id="awayPosition" placeholder="1-20">
+
+  <label>Home Team Streak Type & Length:</label>
+  <select id="homeStreakType">
+    <option value="H">Home</option>
+    <option value="A">Away</option>
+  </select>
+  <input type="number" id="homeStreakLength" placeholder="0">
+
+  <label>Away Team Streak Type & Length:</label>
+  <select id="awayStreakType">
+    <option value="A">Away</option>
+    <option value="H">Home</option>
+  </select>
+  <input type="number" id="awayStreakLength" placeholder="0">
+</div>
+
+<button onclick="predict()">Predict Match</button>
+
+<<div id="predictionResult"></div>
+<div style="margin-top: 30px; padding: 20px; background: #fffbe6; border: 1px solid #f1c40f; border-radius: 8px;">
+  <h3>Unlock Premium Prediction</h3>
+  <p><p>To unlock full prediction, send <strong>Ksh 49 to <span style="color: green;">4585402</span></strong> via M-PESA and paste the confirmation message below:</p>
+  <textarea id="mpesaMessage" rows="4" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;" placeholder="e.g. Confirmed. Ksh49.00 sent to Emanuel Kipkirui Bett..."></textarea>
+  <button onclick="verifyPayment()" style="margin-top: 10px; background: #27ae60; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;">Verify Payment</button>
+  <div id="verificationStatus" style="margin-top: 10px; font-weight: bold;"></div>
+</div>
+
+<script>
+  const PREMIUM_DURATION = 24 * 60 * 60 * 1000; // 1 day
+  const MAX_TRIALS = 3;
+  const USED_MESSAGES_KEY = "usedMpesaMessages";
+  let isVerified = false;
+
+  function incrementTrialCount() {
+    let count = parseInt(localStorage.getItem("trialCount")) || 0;
+    count++;
+    localStorage.setItem("trialCount", count);
+    return count;
+  }
+
+  function hasExceededTrials() {
+    const count = parseInt(localStorage.getItem("trialCount")) || 0;
+    return count >= MAX_TRIALS && !isVerified;
+  }
+
+  function maskResult() {
+    const resultDiv = document.getElementById("predictionResult");
+    resultDiv.innerHTML = `
+      <div style="padding: 20px; background: #f8f9fa; border: 2px dashed #ccc; border-radius: 8px;">
+        <strong>Premium Prediction Locked</strong><br>
+        You’ve reached your 3 free trials.<br>
+        Please verify payment to unlock full access.
+      </div>
+    `;
+    resultDiv.classList.add("blurred");
+  }
+
+  function verifyPayment() {
+    const mpesaMsg = document.getElementById("mpesaMessage").value.trim();
+    const verificationStatus = document.getElementById("verificationStatus");
+    const expectedPattern = /Confirmed.*Ksh49\.00.*paid to Emanuel Kipkirui Bett/i;
+
+    const usedMessages = JSON.parse(localStorage.getItem(USED_MESSAGES_KEY)) || [];
+    if (usedMessages.includes(mpesaMsg)) {
+      verificationStatus.textContent = "This M-PESA message has already been used.";
+      verificationStatus.className = "text-danger fw-bold";
+      return;
+    }
+
+    if (expectedPattern.test(mpesaMsg)) {
+  const verifyTime = new Date().getTime();
+  localStorage.setItem("paymentVerifiedAt", verifyTime);
+  localStorage.setItem(USED_MESSAGES_KEY, JSON.stringify([...usedMessages, mpesaMsg]));
+  isVerified = true;
+
+  verificationStatus.textContent = "Payment verified! Premium unlocked for 1 day.";
+  verificationStatus.className = "text-success fw-bold";
+
+  const mpesaField = document.getElementById("mpesaMessage");
+  mpesaField.disabled = true;
+  mpesaField.style.backgroundColor = "#e0e0e0";
+  mpesaField.style.height = "50px";
+  mpesaField.placeholder = "Message verified and locked.";
+  mpesaField.value = "";
+
+  document.getElementById("predictionResult").classList.remove("blurred");
+
+
+      if (typeof bootstrap !== "undefined") {
+        const premiumModal = new bootstrap.Modal(document.getElementById("premiumModal"));
+        premiumModal.show();
+      }
+    } else {
+      verificationStatus.textContent = "Invalid M-PESA message. Please check and try again.";
+      verificationStatus.className = "text-danger fw-bold";
+    }
+  }
+
+  function checkVerificationExpiry() {
+    const verifiedAt = localStorage.getItem("paymentVerifiedAt");
+    if (!verifiedAt) {
+      isVerified = false;
+      return;
+    }
+
+    const now = new Date().getTime();
+    if (now - verifiedAt > PREMIUM_DURATION) {
+      isVerified = false;
+      localStorage.removeItem("paymentVerifiedAt");
+      alert("Your premium access has expired. Please verify payment again.");
+      document.getElementById("predictionResult").classList.add("blurred");
+    } else {
+      isVerified = true;
+      document.getElementById("predictionResult").classList.remove("blurred");
+    }
+  }
+
+  function autoFormatScoreInput(input) {
+    input.addEventListener("input", function () {
+      let val = this.value.replace(/\D/g, "");
+      if (val.length >= 2) {
+        this.value = val[0] + "-" + val[1];
+      } else {
+        this.value = val;
+      }
+    });
+  }
+
+  function applyAutoFormatting() {
+    const allInputs = [
+      'homeMatch1', 'homeMatch2', 'homeMatch3', 'homeMatch4', 'homeMatch5',
+      'awayMatch1', 'awayMatch2', 'awayMatch3', 'awayMatch4', 'awayMatch5'
+    ];
+    allInputs.forEach(id => {
+      const input = document.getElementById(id);
+      if (input) autoFormatScoreInput(input);
+    });
+  }
+
+  function allInputsFilled() {
+    const requiredFields = [
+      'homeMatch1', 'homeMatch2', 'homeMatch3', 'homeMatch4', 'homeMatch5',
+      'awayMatch1', 'awayMatch2', 'awayMatch3', 'awayMatch4', 'awayMatch5',
+      'homePosition', 'awayPosition', 'homeStreakLength', 'awayStreakLength'
+    ];
+    return requiredFields.every(id => {
+      const el = document.getElementById(id);
+      return el && el.value.trim() !== '';
+    });
+  }
+
+  function parseScore(score) {
+    const parts = score.trim().split('-');
+    if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return [0, 0];
+    return [+parts[0], +parts[1]];
+  }
+
+  function calculateStats(matchInputs) {
+    let scored = 0, conceded = 0, points = 0;
+    for (let input of matchInputs) {
+      const [gs, gc] = parseScore(input.value || "0-0");
+      scored += gs;
+      conceded += gc;
+      if (gs > gc) points += 3;
+      else if (gs === gc) points += 1;
+    }
+    return {
+      avgScored: scored / 5,
+      avgConceded: conceded / 5,
+      formPoints: points
+    };
+  }
+
+  function applyPredictionResult(resultHTML) {
+    checkVerificationExpiry();
+    const resultDiv = document.getElementById("predictionResult");
+
+    if (isVerified) {
+      resultDiv.innerHTML = resultHTML;
+    } else {
+      const count = incrementTrialCount();
+      if (count <= MAX_TRIALS) {
+        resultDiv.innerHTML = resultHTML;
+        if (count === MAX_TRIALS) {
+          alert("You have reached the free trial limit. Please verify payment to unlock full access.");
+        }
+      } else {
+        maskResult();
+      }
+    }
+  }
+
+  function predict() {
+    if (!allInputsFilled()) {
+      applyPredictionResult(`<div style="color: red;">Please fill in all input fields before predicting.</div>`);
+      return;
+    }
+
+    const homeInputs = ['homeMatch1','homeMatch2','homeMatch3','homeMatch4','homeMatch5'].map(id => document.getElementById(id));
+    const awayInputs = ['awayMatch1','awayMatch2','awayMatch3','awayMatch4','awayMatch5'].map(id => document.getElementById(id));
+
+    const homeStats = calculateStats(homeInputs);
+    const awayStats = calculateStats(awayInputs);
+
+    const homePosition = +document.getElementById('homePosition').value || 20;
+    const awayPosition = +document.getElementById('awayPosition').value || 20;
+    const homeStreakType = document.getElementById('homeStreakType').value;
+    const awayStreakType = document.getElementById('awayStreakType').value;
+    const homeStreakLength = +document.getElementById('homeStreakLength').value || 0;
+    const awayStreakLength = +document.getElementById('awayStreakLength').value || 0;
+
+    let homeStrength = homeStats.formPoints * 2 + homeStats.avgScored * 10 - homeStats.avgConceded * 5;
+    let awayStrength = awayStats.formPoints * 2 + awayStats.avgScored * 10 - awayStats.avgConceded * 5;
+
+    const leagueSize = 20;
+    const positionWeight = 3;
+    homeStrength += (leagueSize - homePosition) * positionWeight;
+    awayStrength += (leagueSize - awayPosition) * positionWeight;
+
+    const streakBonusPerGame = 2;
+    if (homeStreakType === 'H') homeStrength += homeStreakLength * streakBonusPerGame;
+    if (homeStreakType === 'A') homeStrength -= homeStreakLength * streakBonusPerGame;
+    if (awayStreakType === 'A') awayStrength += awayStreakLength * streakBonusPerGame;
+    if (awayStreakType === 'H') awayStrength -= awayStreakLength * streakBonusPerGame;
+
+    homeStrength = Math.max(homeStrength, 1);
+    awayStrength = Math.max(awayStrength, 1);
+
+    const totalStrength = homeStrength + awayStrength;
+    const drawProbability = 0.20;
+
+    let homeWinProb = ((homeStrength / totalStrength) * (1 - drawProbability)) * 100;
+    let awayWinProb = ((awayStrength / totalStrength) * (1 - drawProbability)) * 100;
+    const drawProbPercent = drawProbability * 100;
+
+    const totalAvgGoals = homeStats.avgScored + awayStats.avgScored;
+    const totalAvgConceded = homeStats.avgConceded + awayStats.avgConceded;
+
+    const over25 = (totalAvgGoals + totalAvgConceded > 2.5) ? "Likely" : "Unlikely";
+    const over15 = (totalAvgGoals + totalAvgConceded > 1.5) ? "Likely" : "Unlikely";
+    const gg = (homeStats.avgScored > 0.8 && awayStats.avgScored > 0.8) ? "Yes" : "No";
+
+    let doubleChance = "";
+    if (homeWinProb >= 40 && drawProbPercent >= 25) doubleChance = "1X";
+    else if (awayWinProb >= 40 && drawProbPercent >= 25) doubleChance = "X2";
+    else doubleChance = "12";
+
+    const resultHTML = `
+      <div><strong>Prediction Probabilities:</strong></div>
+      <div class="probabilities">Home Win: ${homeWinProb.toFixed(1)}%</div>
+      <div class="probabilities">Draw: ${drawProbPercent.toFixed(1)}%</div>
+      <div class="probabilities">Away Win: ${awayWinProb.toFixed(1)}%</div>
+      <br />
+      <div><strong>Extras:</strong></div>
+      <div class="probabilities">Over 2.5 Goals: ${over25}</div>
+      <div class="probabilities">Over 1.5 Goals: ${over15}</div>
+      <div class="probabilities">Both Teams to Score (GG): ${gg}</div>
+      <div class="probabilities">Double Chance: ${doubleChance}</div>
+    `;
+
+    applyPredictionResult(resultHTML);
+    
+  }
+
+  window.onload = () => {
+    applyAutoFormatting();
+    checkVerificationExpiry();
+  };
+</script>
+
+</body>
+</html>s

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Football Prediction Hub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      padding-top: 70px;
+    }
+    .section {
+      padding: 60px 0;
+      color: white;
+      position: relative;
+    }.ball {
+  font-size: 40px;
+  position: absolute;
+  top: 10px;
+  left: 0;
+  animation: slide 5s linear infinite;
+}
+
+@keyframes slide {
+  0% { left: 0; }
+  50% { left: 80%; }
+  100% { left: 0; }
+}
+
+    .bg-odi { background-color: #28a745; }
+    .bg-virtual { background-color: #007bff; }
+    .bg-ligii { background-color: #6f42c1; }
+    .bg-normal { background-color: #fd7e14; }
+    .bg-jackpot { background-color: #dc3545; }
+    
+    virtua {
+  position: relative;
+  overflow: hidden;
+  height: 300px;
+  background-color: white;
+}
+
+/* Aviator animation (curved path using transform) */
+.aviator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-size: 2rem;
+  animation: curveFlight 7s ease-in-out infinite;
+  z-index: 2;
+}
+
+/* Graph-like fill under the aviator */
+.fill-area {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 50%;
+  background: linear-gradient(to right, green, yellow, orange, red);
+  animation: fillGrow 5s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes curveFlight {
+  0% {
+    transform: translate(0%, 0%);
+  }
+  20% {
+    transform: translate(20vw, -10vh);
+  }
+  40% {
+    transform: translate(40vw, -30vh);
+  }
+  60% {
+    transform: translate(60vw, -50vh);
+  }
+  80% {
+    transform: translate(80vw, -80vh);
+  }
+  100% {
+    transform: translate(100vw, -100vh);
+  }
+}
+
+  </style>
+</head>
+<body>
+<div class="modal fade" id="blockingModal" tabindex="-1" aria-labelledby="blockingModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="blockingModalLabel">Subscribe for Full Access</h5>
+      </div>
+      <div class="modal-body">
+        <p>Send <strong>Ksh 25.0</strong> to Till <strong>4585402</strong> (Emanuel ).</p>
+        <p>Paste the confirmation message below:</p>
+        <textarea id="mpesaMessage" class="form-control" rows="4" placeholder="Paste M-PESA message here..."></textarea>
+        <div id="verifyMsg" class="text-danger mt-2 d-none">Invalid message. Please check and try again.</div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="verifyPayment()" class="btn btn-success">Verify</button>
+      </div>
+    </div>
+  </div>
+</div>
+  <!-- Navbar with Dropdown -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">⚽ Prediction Hub</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              📋 Predictions
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item nav-link-scroll" href="#odi">🟢 ODI League</a></li>
+              <li><a class="dropdown-item nav-link-scroll" href="#virtual">🔵 Virtual</a></li>
+              <li><a class="dropdown-item nav-link-scroll" href="#ligii">🟣 Ligii Bigi -BETIKA</a></li>
+              <li><a class="dropdown-item nav-link-scroll" href="#normal">🟠 Normal Bet</a></li>
+              <li><a class="dropdown-item nav-link-scroll" href="#jackpot">🔴 Jackpot</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <section id="jackpot" class="section bg-jackpot">
+    <div class="ball">⚽</div>
+    <div class="container">
+      <h2 class="text-center mb-4">🔴 Jackpot Predictions</h2>
+      <p class="text-center">Carefully selected predictions to help you hit the jackpot!</p>
+    </div>
+  </section>
+    <!-- Normal Bet -->
+  <section id="normal" class="section bg-normal">
+    <div class="ball">⚽</div>
+    <div class="container">
+      <h2 class="text-center mb-4">🟠 Normal Bet Predictions</h2>
+      <p class="text-center">1X2, GG/NG, Over/Under — your daily dose of smart betting.</p>
+    </div>
+  </section>
+  <!-- ODI League -->
+  <section id="odi" class="section bg-odi">
+    <div class="ball">⚽</div>
+    <div class="container">
+      <h2 class="text-center mb-4">🟢 ODI League Predictions</h2>
+      <p class="text-center">Real-time predictions for all active ODI football leagues.</p>
+    </div>
+  </section>
+<section id="ligii" class="section bg-ligii">
+    <div class="ball">⚽</div>
+    <div class="container">
+      <h2 class="text-center mb-4">🟣 Ligi Bigi Predictions</h2>
+      <p class="text-center">Reliable tips for Ligii Soo matches based on team analysis.</p>
+    </div><section id="virtua" class="section bg-virtual">
+  <div class="aviator">✈️</div>
+  <div class="graph-bar"></div> <!-- Simulated graph bar -->
+  <div class="ball">⚽</div>
+  <div class="container">
+    <h2 class="text-center mb-4">🔵 Aviator </h2>
+    <p class="text-center">cooming soon!!</p>
+  </div>
+</section>
+
+  <!-- Ligii Soo -->
+  
+
+
+
+  <!-- Jackpot -->
+
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center p-3">
+    &copy; 2025 ⚽ Football Prediction Hub. Powered by your winning vibes!
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Smooth Scroll + Auto Dropdown Close -->
+  <script>
+    document.querySelectorAll('.nav-link-scroll').forEach(link => {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          window.scrollTo({
+            top: target.offsetTop - 60,
+            behavior: 'smooth'
+          });
+        }
+        const dropdown = bootstrap.Dropdown.getInstance(this.closest('.dropdown'));
+        if (dropdown) dropdown.hide();
+      });
+    });
+    <script>
+  // Add flower burst on click
+  document.querySelectorAll('.section').forEach(section => {
+    section.style.cursor = "pointer";
+    section.addEventListener('click', function () {
+      const burst = document.createElement('div');
+      burst.innerHTML = '🌸🌸🌸🌸🌸';
+      burst.style.position = 'absolute';
+      burst.style.top = '20px';
+      burst.style.left = '50%';
+      burst.style.transform = 'translateX(-50%)';
+      burst.style.fontSize = '2rem';
+      burst.style.opacity = '1';
+      burst.style.transition = 'opacity 1s ease-out, transform 1s ease-out';
+      burst.classList.add('flower-burst');
+      this.appendChild(burst);
+      setTimeout(() => {
+        burst.style.opacity = '0';
+        burst.style.transform = 'translateX(-50%) translateY(-30px)';
+      }, 50);
+      setTimeout(() => {
+        burst.remove();
+        // Example: Redirect to a detail page (customize per section)
+        if (this.id === "odi") window.location.href = "odi.html";
+        if (this.id === "virtual") window.location.href = "virtual.html";
+        if (this.id === "ligii") window.location.href = "ligii.html";
+        if (this.id === "normal") window.location.href = "normal.html";
+        if (this.id === "jackpot") window.location.href = "jackpot fina.html";
+      }, 1000);
+    });
+  });
+</script>
+<script>
+  // Celebration burst overlay
+  document.querySelectorAll('.section').forEach(section => {
+    section.style.cursor = "pointer";
+    section.addEventListener('click', function () {
+      // Create full-screen overlay
+      const overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.top = 0;
+      overlay.style.left = 0;
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.background = 'rgba(0, 0, 0, 0.85)';
+      overlay.style.display = 'flex';
+      overlay.style.flexWrap = 'wrap';
+      overlay.style.justifyContent = 'center';
+      overlay.style.alignItems = 'center';
+      overlay.style.fontSize = '2rem';
+      overlay.style.zIndex = 9999;
+
+      // Fill with emoji burst
+      for (let i = 0; i < 100; i++) {
+        const emoji = document.createElement('span');
+        emoji.innerText = ['🎇', '🎉', '🎊'][Math.floor(Math.random() * 3)];
+        emoji.style.margin = '5px';
+        emoji.style.animation = `pop 1s ease ${Math.random()}s`;
+        overlay.appendChild(emoji);
+      }
+
+      // Animate + Append
+      document.body.appendChild(overlay);
+
+      // After 1.5s, remove overlay and redirect
+      setTimeout(() => {
+        overlay.remove();
+        // Redirect to specific pages
+        if (this.id === "odi") window.location.href = "odi.html";
+        if (this.id === "virtual") window.location.href = "virtual.html";
+        if (this.id === "ligii") window.location.href = "ligiBigi.html";
+        if (this.id === "normal") window.location.href = "Realbet.html";
+        if (this.id === "jackpot") window.location.href = "jackpot final.html";
+      }, 1500);
+    });
+  });
+
+  // Optional CSS animation
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes pop {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.8; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  </script>
+  
+<script>
+  window.onload = function () {
+    const subscribed = localStorage.getItem("subscribed");
+    if (subscribed === "true") {
+      // User subscribed: enable scrolling and interaction
+      document.body.style.overflow = "auto";
+    } else {
+      // Block scroll and interaction until verified
+      document.body.style.overflow = "hidden";
+
+      // Show modal after 10 seconds delay (or 0 if you want immediately)
+      setTimeout(() => {
+        const modal = new bootstrap.Modal(document.getElementById('blockingModal'), {
+          backdrop: 'static',
+          keyboard: false
+        });
+        modal.show();
+      }, 10000);
+    }
+  };
+
+  function verifyPayment() {
+    const msg = document.getElementById("mpesaMessage").value.trim().toLowerCase();
+
+    const isValid =
+      msg.includes("confirmed") &&
+      msg.includes("ksh25.00") &&
+      msg.includes("emanuel kipkirui bett") &&
+      msg.includes("m-pesa");
+
+    if (isValid) {
+      localStorage.setItem("subscribed", "true");
+      const modalElement = bootstrap.Modal.getInstance(document.getElementById('blockingModal'));
+      modalElement.hide();
+
+      // Re-enable scroll and interaction
+      document.body.style.overflow = "auto";
+    } else {
+      document.getElementById("verifyMsg").classList.remove("d-none");
+    }
+  }
+</script>
+</body>
+</html>

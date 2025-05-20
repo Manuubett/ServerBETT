@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ligi Bigi Virtual Predictor</title>
+  <style>
+    /* Loading screen styles */
+    #loadingScreen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: linear-gradient(135deg, #0d47a1, #1976d2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: 0.1em;
+      user-select: none;
+    }
+    .logo-text {
+      font-size: 2.5rem;
+      color: #ffd600;
+      text-shadow: -2px 2px 0 #0d47a1, 2px -2px 0 #0d47a1, -2px -2px 0 #0d47a1, 2px 2px 0 #0d47a1;
+      margin-top: 10px;
+    }
+    .spinner {
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top: 5px solid white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    .countdown {
+      background: #43a047;
+      color: white;
+      font-size: 4rem;
+      padding: 20px 40px;
+      border-radius: 50%;
+      margin-bottom: 20px;
+    }
+
+    /* Main styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #121c2c;
+      color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    h2 {
+      text-align: center;
+      color: #ffd600;
+      margin-bottom: 10px;
+    }
+    .instructions {
+      font-size: 15px;
+      background: #1e2a3a;
+      padding: 15px;
+      border-left: 5px solid #3498db;
+      margin-bottom: 25px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+    label, strong {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #ffe082;
+    }
+    input[type=number], input[type=text] {
+      width: 50px;
+      margin: 4px;
+      padding: 6px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    #result {
+      margin-top: 30px;
+      font-weight: bold;
+      font-size: 18px;
+      background: #2e7d32;
+      color: #ffffff;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #4caf50;
+      min-height: 50px;
+    }
+    .history {
+      margin-top: 30px;
+    }
+    .history h3 {
+      color: #ffd600;
+    }
+    .history-item {
+      background: #1e2a3a;
+      border-left: 4px solid #ddd;
+      padding: 10px 15px;
+      margin-top: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    #premiumLock {
+      background: #f39c12;
+      color: #000;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 30px;
+      text-align: center;
+      display: none;
+    }
+    #premiumLock input {
+      width: calc(100% - 20px);
+      margin: 10px 0;
+    }
+
+    @media (max-width: 650px) {
+      body {
+        margin: 20px;
+        padding: 10px;
+      }
+      input[type=number] {
+        width: 40px;
+        margin: 3px;
+      }
+      button {
+        font-size: 14px;
+        padding: 10px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loadingScreen">
+    <div class="countdown" id="countdown">3</div>
+    <div class="spinner"></div>
+    <div class="logo-text">LIGI BIGI</div>
+    <p>PREDICTOR LOADING...</p>
+  </div>
+
+  <h2>Ligi Bigi Virtual Predictor</h2>
+
+  <div class="instructions">
+    <p>
+      Enter the last 6 results for both the Home and Away teams using points:
+      <strong>3 = Win</strong>, <strong>1 = Draw</strong>, <strong>0 = Loss</strong>.<br />
+      Then input the total <strong>goals scored and conceded</strong> by each team during those 6 matches.<br />
+      Click <strong>“Predict Match”</strong> to get an outcome suggestion based on both form and goal strength.
+    </p>
+  </div>
+
+  <div>
+    <strong>Home Team Last 6 Results:</strong>
+    <div id="homeInputs">
+      <input type="number" min="0" max="3" value="3" />
+      <input type="number" min="0" max="3" value="3" />
+      <input type="number" min="0" max="3" value="1" />
+      <input type="number" min="0" max="3" value="0" />
+      <input type="number" min="0" max="3" value="3" />
+      <input type="number" min="0" max="3" value="3" />
+    </div>
+
+    <strong>Home Goals (Scored / Conceded):</strong>
+    <input type="number" id="homeGoalsScored" min="0" value="10" /> /
+    <input type="number" id="homeGoalsConceded" min="0" value="4" />
+  </div>
+
+  <div>
+    <strong>Away Team Last 6 Results:</strong>
+    <div id="awayInputs">
+      <input type="number" min="0" max="3" value="0" />
+      <input type="number" min="0" max="3" value="1" />
+      <input type="number" min="0" max="3" value="3" />
+      <input type="number" min="0" max="3" value="0" />
+      <input type="number" min="0" max="3" value="1" />
+      <input type="number" min="0" max="3" value="0" />
+    </div>
+
+    <strong>Away Goals (Scored / Conceded):</strong>
+    <input type="number" id="awayGoalsScored" min="0" value="5" /> /
+    <input type="number" id="awayGoalsConceded" min="0" value="10" />
+  </div>
+
+  <button onclick="predict()">Predict Match</button>
+  <button onclick="clearHistory()" style="background:#e74c3c; margin-left:10px;">Clear History</button>
+  
+  <div id="premiumLock">
+    <p>You’ve reached your free trial limit (3 predictions).</p>
+    <p>To unlock full access, send <strong>49</strong> to Till number <strong>4585402</strong> (Name: EMANUEL).</p>
+    <p>Then paste the confirmation message below:</p>
+    <input type="text" id="verificationInput" placeholder="Paste confirmation message..." />
+    <button onclick="verifyPayment()">Verify</button>
+  </div>
+
+  <div id="result"></div>
+
+  <div class="history">
+    <h3>Prediction History</h3>
+    <div id="historyList"></div>
+  </div>
+
+
+  <script>
+    let count = 3;
+    const countdownEl = document.getElementById('countdown');
+
+    const countdownInterval = setInterval(() => {
+      count--;
+      if (count > 0) {
+        countdownEl.textContent = count;
+      } else {
+        clearInterval(countdownInterval);
+        const loader = document.getElementById('loadingScreen');
+        loader.style.transition = 'opacity 0.6s ease';
+        loader.style.opacity = '0';
+        setTimeout(() => loader.style.display = 'none', 600);
+      }
+    }, 1000);
+
+    function isPremium() {
+      const expiry = localStorage.getItem('premiumExpiry');
+      return expiry && new Date().getTime() < Number(expiry);
+    }
+
+    function predict() {
+      if (!isPremium()) {
+        let used = Number(localStorage.getItem('predictionCount') || 0);
+        if (used >= 3) {
+          document.getElementById('premiumLock').style.display = 'block';
+          return;
+        }
+        localStorage.setItem('predictionCount', used + 1);
+      }
+
+      const homeLast6 = Array.from(document.querySelectorAll('#homeInputs input')).map(i => Number(i.value));
+      const awayLast6 = Array.from(document.querySelectorAll('#awayInputs input')).map(i => Number(i.value));
+      const homeGoalsScored = Number(document.getElementById('homeGoalsScored').value);
+      const homeGoalsConceded = Number(document.getElementById('homeGoalsConceded').value);
+      const awayGoalsScored = Number(document.getElementById('awayGoalsScored').value);
+      const awayGoalsConceded = Number(document.getElementById('awayGoalsConceded').value);
+
+      const stats = { homeGoalsScored, homeGoalsConceded, awayGoalsScored, awayGoalsConceded };
+      const prediction = predictMatch(homeLast6, awayLast6, stats);
+
+      const output = `
+        Outcome: ${prediction.outcome}<br/>
+        Double Chance: ${prediction.doubleChance}<br/>
+        Both Teams Score: ${prediction.gg}<br/>
+        Goals Over/Under: ${prediction.overUnder}
+      `;
+      document.getElementById('result').innerHTML = output;
+
+      savePrediction({
+        date: new Date().toLocaleString(),
+        homeLast6,
+        awayLast6,
+        stats,
+        prediction
+      });
+
+      renderHistory();
+    }
+
+    function verifyPayment() {
+  const code = document.getElementById('verificationInput').value.trim();
+  if (code.length < 10) {
+    alert("Invalid message. Please paste a full confirmation message.");
+    return;
+  }
+
+  if (!/ksh\s*49/i.test(code)) {
+    alert("Only payments of Ksh 49 are accepted.");
+    return;
+  }
+
+  const usedCodes = JSON.parse(localStorage.getItem('usedConfirmationCodes') || '[]');
+  if (usedCodes.includes(code)) {
+    alert("This confirmation message has already been used.");
+    return;
+  }
+
+  // Save the message to block future reuse
+  usedCodes.push(code);
+  localStorage.setItem('usedConfirmationCodes', JSON.stringify(usedCodes));
+
+  // Activate premium
+  const expiry = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  localStorage.setItem('premiumExpiry', expiry);
+  localStorage.setItem('predictionCount', 0);
+  document.getElementById('premiumLock').style.display = 'none';
+  alert("Premium unlocked for 24 hours!");
+}
+
+    function predictMatch(homeLast6, awayLast6, stats) {
+      const homePoints = homeLast6.reduce((a, b) => a + b, 0);
+      const awayPoints = awayLast6.reduce((a, b) => a + b, 0);
+      const homeStrength = stats.homeGoalsScored - stats.homeGoalsConceded;
+      const awayStrength = stats.awayGoalsScored - stats.awayGoalsConceded;
+      const goalTotal = stats.homeGoalsScored + stats.awayGoalsScored;
+      const bothTeamsScore = stats.homeGoalsScored > 0 && stats.awayGoalsScored > 0;
+      const diff = homePoints - awayPoints;
+      const powerDiff = homeStrength - awayStrength;
+      const totalImpact = diff + powerDiff;
+
+      let outcome = "", doubleChance = "";
+      if (totalImpact > 3) {
+        outcome = "Home team likely to win";
+        doubleChance = "1X (Home or Draw)";
+      } else if (totalImpact < -3) {
+        outcome = "Away team likely to win";
+        doubleChance = "X2 (Away or Draw)";
+      } else {
+        outcome = "Match likely to draw";
+        doubleChance = "12 (Either team wins)";
+      }
+      const gg = bothTeamsScore ? "GG (Both likely to score)" : "NG (Likely clean sheet)";
+      const overUnder = goalTotal > 2.5 ? "Over 2.5 goals" : "Under 2.5 goals";
+
+      return { outcome, doubleChance, gg, overUnder };
+    }
+
+    function savePrediction(data) {
+      let history = JSON.parse(localStorage.getItem('ligiSooHistory')) || [];
+      history.unshift(data);
+      if (history.length > 50) history.pop();
+      localStorage.setItem('ligiSooHistory', JSON.stringify(history));
+    }
+
+    function renderHistory() {
+      const historyList = document.getElementById('historyList');
+      let history = JSON.parse(localStorage.getItem('ligiSooHistory')) || [];
+      historyList.innerHTML = history.length
+        ? history.map(item => `
+          <div class="history-item">
+            <strong>${item.date}</strong><br/>
+            Home Results: ${item.homeLast6.join(", ")} | Goals: ${item.stats.homeGoalsScored}/${item.stats.homeGoalsConceded}<br/>
+            Away Results: ${item.awayLast6.join(", ")} | Goals: ${item.stats.awayGoalsScored}/${item.stats.awayGoalsConceded}<br/>
+            <em>${item.prediction.outcome} | ${item.prediction.doubleChance} | ${item.prediction.gg} | ${item.prediction.overUnder}</em>
+          </div>
+        `).join('')
+        : "<p>No predictions yet.</p>";
+    }
+
+    function clearHistory() {
+      if (confirm("Clear all prediction history?")) {
+        localStorage.removeItem('ligiSooHistory');
+        localStorage.removeItem('predictionCount');
+        renderHistory();
+        document.getElementById('result').innerHTML = '';
+      }
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>

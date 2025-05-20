@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jackpot Match Predictor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    #predictionResult.blurred {
+      filter: blur(6px);
+      transition: filter 0.5s ease;
+      user-select: none;
+    }
+    textarea:disabled {
+      background-color: #e9ecef;
+      color: #495057;
+    }
+  </style>
+</head><body class="bg-light">
+  <div class="container py-4 position-relative pitch">
+    <h2 class="text-center mb-4">Live Bet Prediction</h2>
+
+    <!-- Moving ball -->
+    <div id="emoji-ball" style="color: white; font-size: 2.5rem; position: absolute; top: 50%; left: 0; transform: translateY(-50%); user-select: none;"></div>
+
+    <!-- Play Sound Button -->
+    <button id="playSound" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 4;" class="btn btn-light btn-sm">
+      Play Stadium Sound
+    </button>
+  </div>
+
+  <!-- Hidden Audio Player -->
+  <audio id="stadiumAudio" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2021/09/30/audio_1be7b3a177.mp3?filename=crowd-cheering-ambient-3876.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <style>
+    .pitch {
+      height: 300px;
+      background: linear-gradient(90deg, #006400 25%, #228B22 75%);
+      border: 4px solid white;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pitch::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      border-left: 3px solid white;
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+
+    .pitch::after {
+      content: '';
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid white;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+    }
+
+    h2 {
+      color: white;
+      text-shadow: 0 0 5px black;
+      position: relative;
+      z-index: 2;
+    }
+
+    #emoji-ball {
+      animation: ballMove 6s linear infinite alternate;
+      z-index: 3;
+    }
+
+    @keyframes ballMove {
+      0% {
+        left: 0;
+      }
+      100% {
+        left: calc(100% - 2.5rem);
+      }
+    }
+  </style>
+
+  <script>
+    document.getElementById('playSound').addEventListener('click', function () {
+      const audio = document.getElementById('stadiumAudio');
+      audio.play();
+    });
+
+    document.getElementById('emoji-ball').textContent = '⚽';
+  </script>
+</body>
+
+  <script>
+    // Set the emoji content dynamically to keep clean HTML
+    document.getElementById('emoji-ball').textContent = '⚽';
+  </script>
+</body>
+
+    <div class="card p-4 shadow-sm mb-4">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Home Team</label>
+          <input type="text" class="form-control" id="homeTeam" placeholder="Home Team Name" oninput="validateInput(event)" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Away Team</label>
+          <input type="text" class="form-control" id="awayTeam" placeholder="Away Team Name" oninput="validateInput(event)" />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Home Last 6 Results (3=Win, 1=Draw, 0=Loss)</label>
+        <div class="d-flex flex-wrap gap-2" id="homeLast6">
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Away Last 6 Results (3=Win, 1=Draw, 0=Loss)</label>
+        <div class="d-flex flex-wrap gap-2" id="awayLast6">
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+          <input type="number" class="form-control" min="0" max="3" style="width: 45px;" oninput="validateInput(event)" />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-3">
+          <input type="number" class="form-control" id="homeGoalsScored" placeholder="Home Scored" min="0" oninput="validateInput(event)" />
+        </div>
+        <div class="col-3">
+          <input type="number" class="form-control" id="homeGoalsConceded" placeholder="Home Conceded" min="0" oninput="validateInput(event)" />
+        </div>
+        <div class="col-3">
+          <input type="number" class="form-control" id="awayGoalsScored" placeholder="Away Scored" min="0" oninput="validateInput(event)" />
+        </div>
+        <div class="col-3">
+          <input type="number" class="form-control" id="awayGoalsConceded" placeholder="Away Conceded" min="0" oninput="validateInput(event)" />
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" id="predictBtn" onclick="predictMatch()" disabled>Predict</button>
+        <button class="btn btn-secondary" onclick="clearHistory()">Reset History</button>
+      </div>
+    </div>
+
+    <div class="card p-3 mb-4">
+      <h4>Prediction Result</h4>
+      <div id="predictionResult" class="blurred text-primary fw-bold fs-5">Make a prediction to see result here.</div>
+    </div>
+
+    <div class="card p-3 mb-4">
+      <h5>Prediction History</h5>
+      <div id="historyList"><p>No predictions yet.</p></div>
+    </div>
+
+    <div class="card p-4 mb-4">
+      <h5>Unlock Premium Predictions</h5>
+      <p>
+        To view full predictions, please send <strong>Ksh49</strong> via M-PESA to:<br />
+        <strong>Till Number:</strong> <span class="text-success">4585402</span><br />
+        <strong>Recipient:</strong> Emanuel
+      </p>
+      <label class="form-label" for="mpesaMessage">Paste M-PESA Confirmation Message:</label>
+      <textarea id="mpesaMessage" class="form-control mb-2" rows="3" placeholder="Paste your M-PESA message here..."></textarea>
+      <button class="btn btn-success" onclick="verifyPayment()">Verify Payment</button>
+      <p id="verificationStatus" class="mt-2 fw-semibold"></p>
+    </div>
+
+    <button id="downloadBtn" class="btn btn-outline-dark" style="display:none;">Download PDF</button>
+  </div>
+
+  <!-- Bootstrap Modal -->
+  <div class="modal fade" id="premiumModal" tabindex="-1" aria-labelledby="premiumModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="premiumModalLabel">Premium Access Unlocked</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Thank you for your payment! Premium predictions are now unlocked.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isVerified = false;
+    const predictBtn = document.querySelector('button[onclick="predictMatch()"]');
+    const PREMIUM_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+    function validateInput(e) {
+      const input = e.target;
+      const val = input.value.trim();
+      if (input.parentElement.id === "homeLast6" || input.parentElement.id === "awayLast6") {
+        if (!["0", "1", "3"].includes(val) && val !== "") {
+          input.value = "";
+          alert("Use only 0, 1 or 3 for results.");
+        }
+      } else if (input.type === "number" && val !== "" && +val < 0) {
+        input.value = "";
+        alert("Goals must be non-negative.");
+      }
+      togglePredictButton();
+    }
+
+    function validateInputs() {
+      const getVal = (id) => document.getElementById(id).value.trim();
+      const results = (id) =>
+        Array.from(document.querySelectorAll(`#${id} input`)).map((i) => i.value.trim());
+
+      if (!getVal("homeTeam") || !getVal("awayTeam")) return false;
+      for (let v of [...results("homeLast6"), ...results("awayLast6")]) {
+        if (v === "" || !["0", "1", "3"].includes(v)) return false;
+      }
+
+      const goals = [
+        "homeGoalsScored",
+        "homeGoalsConceded",
+        "awayGoalsScored",
+        "awayGoalsConceded",
+      ];
+      return goals.every((id) => {
+        const val = getVal(id);
+        return val !== "" && !isNaN(+val) && +val >= 0;
+      });
+    }
+
+    function togglePredictButton() {
+      predictBtn.disabled = !validateInputs();
+    }
+
+    function predictMatch() {
+      if (!validateInputs()) return alert("Fill all fields correctly.");
+
+      const get = (id) => document.getElementById(id).value.trim();
+      const arr = (id) =>
+        Array.from(document.querySelectorAll(`#${id} input`)).map((i) => +i.value);
+
+      const homeTeam = get("homeTeam"),
+        awayTeam = get("awayTeam");
+      const homeLast6 = arr("homeLast6"),
+        awayLast6 = arr("awayLast6");
+
+      const stats = {
+        homeGoalsScored: +get("homeGoalsScored"),
+        homeGoalsConceded: +get("homeGoalsConceded"),
+        awayGoalsScored: +get("awayGoalsScored"),
+        awayGoalsConceded: +get("awayGoalsConceded"),
+      };
+
+      const power =
+        stats.homeGoalsScored -
+        stats.homeGoalsConceded -
+        (stats.awayGoalsScored -stats.awayGoalsConceded);
+
+      // Simple prediction logic example
+      let outcome = "";
+      if (power > 0) outcome = "1 (Home Win)";
+      else if (power < 0) outcome = "2 (Away Win)";
+      else outcome = "X (Draw)";
+
+      // Example additional predictions (GG/NG and Over/Under 2.5)
+      const totalGoals =
+        stats.homeGoalsScored + stats.homeGoalsConceded + stats.awayGoalsScored + stats.awayGoalsConceded;
+      const ggNg = totalGoals >= 3 ? "GG (Both Teams to Score)" : "NG (No Goal)";
+      const overUnder = totalGoals >= 3 ? "Over 2.5" : "Under 2.5";
+
+      const predictionText = `
+        Match: ${homeTeam} vs ${awayTeam}
+        Outcome: ${outcome}
+        GG/NG: ${ggNg}
+        Over/Under: ${overUnder}
+      `;
+
+      // Save prediction to history
+      savePredictionToHistory(predictionText.trim());
+
+      // Show result, blur if not verified
+      const resultDiv = document.getElementById("predictionResult");
+      resultDiv.textContent = predictionText.trim();
+      if (!isVerified) {
+        resultDiv.classList.add("blurred");
+        alert(
+          "Prediction is blurred. Unlock premium by verifying your M-PESA payment below."
+        );
+      } else {
+        resultDiv.classList.remove("blurred");
+      }
+      clearInputs();
+    }
+
+    function savePredictionToHistory(prediction) {
+      let history = JSON.parse(localStorage.getItem("predictionHistory")) || [];
+      history.unshift({ text: prediction, date: new Date().toLocaleString() });
+      if (history.length > 10) history.pop(); // keep last 10
+      localStorage.setItem("predictionHistory", JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const historyList = document.getElementById("historyList");
+      const history = JSON.parse(localStorage.getItem("predictionHistory")) || [];
+      if (history.length === 0) {
+        historyList.innerHTML = "<p>No prediction history.</p>";
+        return;
+      }
+      historyList.innerHTML = history
+        .map(
+          (item) =>
+            `<div class="border p-2 mb-2 bg-white rounded">
+              <small class="text-muted">${item.date}</small>
+              <pre class="mb-0">${item.text}</pre>
+            </div>`
+        )
+        .join("");
+    }
+
+    function clearHistory() {
+      if (confirm("Are you sure you want to clear prediction history?")) {
+        localStorage.removeItem("predictionHistory");
+        renderHistory();
+      }
+    }
+
+    function clearInputs() {
+      document.getElementById("homeTeam").value = "";
+      document.getElementById("awayTeam").value = "";
+      document.querySelectorAll("#homeLast6 input, #awayLast6 input").forEach((i) => (i.value = ""));
+      ["homeGoalsScored", "homeGoalsConceded", "awayGoalsScored", "awayGoalsConceded"].forEach(
+        (id) => (document.getElementById(id).value = "")
+      );
+      togglePredictButton();
+    }
+
+    function verifyPayment() {
+      const mpesaMsg = document.getElementById("mpesaMessage").value.trim();
+      const verificationStatus = document.getElementById("verificationStatus");
+      const expectedPattern = /Confirmed.*Ksh49\.00.*paid to Emanuel Kipkirui Bett/i;
+
+      if (expectedPattern.test(mpesaMsg)) {
+        // Save verification with timestamp
+        const verifyTime = new Date().getTime();
+        localStorage.setItem("paymentVerifiedAt", verifyTime);
+        isVerified = true;
+        verificationStatus.textContent = "Payment verified! Premium unlocked for 30 minutes.";
+        verificationStatus.className = "text-success fw-bold";
+
+        // Show modal
+        const premiumModal = new bootstrap.Modal(document.getElementById("premiumModal"));
+        premiumModal.show();
+
+        // Remove blur from prediction result if any
+        const resultDiv = document.getElementById("predictionResult");
+        resultDiv.classList.remove("blurred");
+
+        // Clear payment message input
+        document.getElementById("mpesaMessage").value = "";
+
+      } else {
+        verificationStatus.textContent = "Invalid M-PESA message. Please check and try again.";
+        verificationStatus.className = "text-danger fw-bold";
+      }
+    }
+
+    function checkVerificationExpiry() {
+      const verifiedAt = localStorage.getItem("paymentVerifiedAt");
+      if (!verifiedAt) {
+        isVerified = false;
+        return;
+      }
+      const now = new Date().getTime();
+      if (now - verifiedAt > PREMIUM_DURATION) {
+        // Expired
+        isVerified = false;
+        localStorage.removeItem("paymentVerifiedAt");
+        alert("Your premium access has expired. Please verify payment again to continue.");
+        const resultDiv = document.getElementById("predictionResult");
+        resultDiv.classList.add("blurred");
+      } else {
+        isVerified = true;
+        const resultDiv = document.getElementById("predictionResult");
+        resultDiv.classList.remove("blurred");
+      }
+    }
+
+    // Initialize
+    window.onload = () => {
+      renderHistory();
+      togglePredictButton();
+      checkVerificationExpiry();
+
+      // Check verification expiry every minute
+      setInterval(checkVerificationExpiry, 60 * 1000);
+    };
+  </script>
+</body>
+</html>
+
